@@ -8,11 +8,12 @@ import java.time.format.DateTimeParseException;
 public class project {
 
     private JFrame frame;
-    private JTextField taskField;
-    private JTextField dueDateField;
+    private JTextField titleInputField;
+    private JTextField dateInputField;
     private DefaultListModel<Task> taskListModel;
     private JList<Task> taskList;
     private JButton addButton, deleteButton, completeButton;
+    private JLabel successLabel;
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public static void main(String[] args) {
@@ -68,12 +69,12 @@ public class project {
         gbc.weightx = 0.25;
         inputPanel.add(taskLabel, gbc);
 
-        taskField = new JTextField();
-        taskField.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        titleInputField = new JTextField();
+        titleInputField.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         gbc.gridx = 1;
         gbc.gridy = 0;
         gbc.weightx = 0.75;
-        inputPanel.add(taskField, gbc);
+        inputPanel.add(titleInputField, gbc);
 
         JLabel dueDateLabel = new JLabel("Due Date (YYYY-MM-DD):");
         dueDateLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
@@ -83,14 +84,14 @@ public class project {
         gbc.weightx = 0.25;
         inputPanel.add(dueDateLabel, gbc);
 
-        dueDateField = new JTextField();
-        dueDateField.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        dateInputField = new JTextField();
+        dateInputField.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         gbc.gridx = 1;
         gbc.gridy = 1;
         gbc.weightx = 0.75;
-        inputPanel.add(dueDateField, gbc);
+        inputPanel.add(dateInputField, gbc);
 
-        addButton = new JButton("➕ Add Task");
+        addButton = new JButton("🎯 Add New Task");
         addButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
         addButton.setBackground(new Color(100, 149, 237));
         addButton.setForeground(Color.WHITE);
@@ -101,6 +102,12 @@ public class project {
         gbc.gridwidth = 2;
         gbc.weightx = 1.0;
         inputPanel.add(addButton, gbc);
+
+        successLabel = new JLabel("", JLabel.CENTER);
+        successLabel.setFont(new Font("Segoe UI", Font.ITALIC, 14));
+        successLabel.setForeground(new Color(34, 139, 34));
+        gbc.gridy = 3;
+        inputPanel.add(successLabel, gbc);
 
         frame.add(inputPanel, BorderLayout.NORTH);
 
@@ -141,7 +148,9 @@ public class project {
 
         addButton.addActionListener(e -> {
             if (addTask()) {
-                askContinueOrExit();
+                successLabel.setText("🎉 Task added successfully!");
+            } else {
+                successLabel.setText("");
             }
         });
 
@@ -153,18 +162,16 @@ public class project {
 
         completeButton.addActionListener(e -> {
             markTaskCompleted();
-            askContinueOrExit();
         });
 
         deleteButton.addActionListener(e -> {
             deleteTask();
-            askContinueOrExit();
         });
     }
 
     private boolean addTask() {
-        String title = taskField.getText().trim();
-        String dueDateStr = dueDateField.getText().trim();
+        String title = titleInputField.getText().trim();
+        String dueDateStr = dateInputField.getText().trim();
 
         if (title.isEmpty()) {
             JOptionPane.showMessageDialog(frame, "Task title cannot be empty.",
@@ -188,11 +195,10 @@ public class project {
 
         Task newTask = new Task(title, dueDate);
         taskListModel.addElement(newTask);
-
         sortTasks();
 
-        taskField.setText("");
-        dueDateField.setText("");
+        titleInputField.setText("");
+        dateInputField.setText("");
         return true;
     }
 
@@ -203,7 +209,7 @@ public class project {
             if (!task.isCompleted()) {
                 task.setCompleted(true);
                 taskList.repaint();
-                JOptionPane.showMessageDialog(frame, "Task marked as completed!");
+                JOptionPane.showMessageDialog(frame, "✅ Task marked as completed!");
                 sortTasks();
             } else {
                 JOptionPane.showMessageDialog(frame, "Task is already completed.");
@@ -228,16 +234,6 @@ public class project {
         taskListModel.clear();
         for (Task t : tasks) {
             taskListModel.addElement(t);
-        }
-    }
-
-    private void askContinueOrExit() {
-        int option = JOptionPane.showConfirmDialog(frame,
-                "Do you want to continue using the application?",
-                "Continue?",
-                JOptionPane.YES_NO_OPTION);
-        if (option == JOptionPane.NO_OPTION) {
-            confirmExit();
         }
     }
 
