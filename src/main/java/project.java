@@ -4,6 +4,8 @@ import java.awt.event.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Collections;
+import java.util.List;
 
 public class project {
 
@@ -170,4 +172,50 @@ public class project {
         String dueDateStr = dateInputField.getText().trim();
 
         if (title.isEmpty()) {
-            JOptionPane.showMessageDialog(frame, "Task title cann
+            JOptionPane.showMessageDialog(frame, "Task title cannot be empty.",
+                    "Input Error", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+        LocalDate dueDate;
+        try {
+            dueDate = LocalDate.parse(dueDateStr, dateFormatter);
+            if (dueDate.isBefore(LocalDate.now())) {
+                JOptionPane.showMessageDialog(frame, "Due date cannot be in the past.",
+                        "Input Error", JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+        } catch (DateTimeParseException ex) {
+            JOptionPane.showMessageDialog(frame, "Invalid date format. Please use YYYY-MM-DD.",
+                    "Input Error", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+        Task newTask = new Task(title, dueDate);
+        taskListModel.addElement(newTask);
+        sortTasks();
+
+        titleInputField.setText("");
+        dateInputField.setText("");
+        return true;
+    }
+
+    private void markTaskCompleted() {
+        int selectedIndex = taskList.getSelectedIndex();
+        if (selectedIndex >= 0) {
+            Task task = taskListModel.get(selectedIndex);
+            if (!task.isCompleted()) {
+                task.setCompleted(true);
+                taskList.repaint();
+                JOptionPane.showMessageDialog(frame, "✅ Task marked as completed!");
+                sortTasks();
+            } else {
+                JOptionPane.showMessageDialog(frame, "Task is already completed.");
+            }
+        }
+    }
+
+    private void deleteTask() {
+        int selectedIndex = taskList.getSelectedIndex();
+        if (selectedIndex >= 0) {
+            taskListModel.remove(selectedIndex);
