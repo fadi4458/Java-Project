@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
-import java.util.List;
+import java.util.Comparator;
 
 public class project {
 
@@ -25,6 +25,9 @@ public class project {
                 window.frame.setVisible(true);
             } catch (Exception e) {
                 e.printStackTrace();
+                JOptionPane.showMessageDialog(null,
+                        "Unexpected error occurred during app startup:\n" + e.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
     }
@@ -149,11 +152,18 @@ public class project {
         actionPanel.add(deleteButton);
         frame.add(actionPanel, BorderLayout.SOUTH);
 
+        // Add listeners
         addButton.addActionListener(e -> {
-            if (addTask()) {
-                successLabel.setText("🎉 Task added successfully!");
-            } else {
-                successLabel.setText("");
+            try {
+                if (addTask()) {
+                    successLabel.setText("🎉 Task added successfully!");
+                } else {
+                    successLabel.setText("");
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(frame,
+                        "An unexpected error occurred while adding the task:\n" + ex.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
@@ -161,10 +171,28 @@ public class project {
             boolean selected = !taskList.isSelectionEmpty();
             completeButton.setEnabled(selected);
             deleteButton.setEnabled(selected);
+            successLabel.setText("");
         });
 
-        completeButton.addActionListener(e -> markTaskCompleted());
-        deleteButton.addActionListener(e -> deleteTask());
+        completeButton.addActionListener(e -> {
+            try {
+                markTaskCompleted();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(frame,
+                        "An error occurred while marking the task completed:\n" + ex.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        deleteButton.addActionListener(e -> {
+            try {
+                deleteTask();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(frame,
+                        "An error occurred while deleting the task:\n" + ex.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
     }
 
     private boolean addTask() {
@@ -209,8 +237,10 @@ public class project {
                 taskList.repaint();
                 JOptionPane.showMessageDialog(frame, "✅ Task marked as completed!");
                 sortTasks();
+                successLabel.setText("Task marked as completed!");
             } else {
                 JOptionPane.showMessageDialog(frame, "Task is already completed.");
+                successLabel.setText("");
             }
         }
     }
@@ -218,4 +248,98 @@ public class project {
     private void deleteTask() {
         int selectedIndex = taskList.getSelectedIndex();
         if (selectedIndex >= 0) {
-            taskListModel.remove(selectedIndex);
+            int confirm = JOptionPane.showConfirmDialog(frame,
+                    "Are you sure you want to delete the selected task?",
+                    "Confirm Delete", JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) {
+                taskListModel.remove(selectedIndex);
+                successLabel.setText("Task deleted successfully.");
+                sortTasks();
+            }
+        } else {
+            JOptionPane.showMessageDialog(frame, "Please select a task to delete.",
+                    "No Selection", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+    private void sortTasks() {
+        // Convert model to array, sort, then update model
+        java.util.List<Task> tasks = Collections.list(taskListModel.elements());
+
+        // Sort by completion (incomplete first), then by due date ascending
+        tasks.sort(Comparator
+                .comparing(Task::isCompleted)
+                .thenComparing(Task::getDueDate));
+
+        taskListModel.clear();
+        for (Task t : tasks) {
+            taskListModel.addElement(t);
+        }
+    }
+
+    private void confirmExit() {
+        int confirm = JOptionPane.showConfirmDialog(frame,
+                "Are you sure you want to exit?",
+                "Exit Confirmation", JOptionPane.YES_NO_OPTION);
+        if (confirm == JOptionPane.YES_OPTION) {
+            frame.dispose();
+        }
+    }
+
+    // Task class
+    static class Task {
+        private String title;
+        private LocalDate dueDate;
+        private boolean completed;
+
+        public Task(String title, LocalDate dueDate) {
+            this.title = title;
+            this.dueDate = dueDate;
+            this.completed = false;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public LocalDate getDueDate() {
+            return dueDate;
+        }
+
+        public boolean isCompleted() {
+            return completed;
+        }
+
+        public void setCompleted(boolean completed) {
+            this.completed = completed;
+        }
+
+        @Override
+        public String toString() {
+            return title + " (Due: " + dueDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + ")" +
+                    (completed ? " ✅" : "");
+        }
+    }
+
+    // Custom renderer to show completed tasks with strike-through
+    static class TaskCellRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList<?> list, Object value,
+                                                      int index, boolean isSelected,
+                                                      boolean cellHasFocus) {
+            JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            if (value instanceof Task) {
+                Task task = (Task) value;
+                label.setText(task.toString());
+                if (task.isCompleted()) {
+                    label.setForeground(Color.GRAY);
+                    label.setFont(label.getFont().deriveFont(Font.ITALIC));
+                } else {
+                    label.setForeground(Color.BLACK);
+                    label.setFont(label.getFont().deriveFont(Font.PLAIN));
+                }
+            }
+            return label;
+        }
+    }
+}
