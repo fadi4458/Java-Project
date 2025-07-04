@@ -12,7 +12,7 @@ public class project {
     private JTextField dateInputField;
     private DefaultListModel<Task> taskListModel;
     private JList<Task> taskList;
-    private JButton addButton, completeButton;
+    private JButton addButton, completeButton, deleteButton;
     private JLabel successLabel;
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -126,6 +126,7 @@ public class project {
 
         JPanel actionPanel = new JPanel();
         actionPanel.setBackground(new Color(245, 245, 250));
+
         completeButton = new JButton("✅ Mark Completed");
         completeButton.setEnabled(false);
         completeButton.setFont(new Font("Segoe UI", Font.BOLD, 16));
@@ -134,7 +135,16 @@ public class project {
         completeButton.setFocusPainted(false);
         completeButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
+        deleteButton = new JButton("🗑️ Delete Task");
+        deleteButton.setEnabled(false);
+        deleteButton.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        deleteButton.setBackground(new Color(220, 20, 60));
+        deleteButton.setForeground(Color.WHITE);
+        deleteButton.setFocusPainted(false);
+        deleteButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
         actionPanel.add(completeButton);
+        actionPanel.add(deleteButton);
         frame.add(actionPanel, BorderLayout.SOUTH);
 
         addButton.addActionListener(e -> {
@@ -148,9 +158,11 @@ public class project {
         taskList.addListSelectionListener(e -> {
             boolean selected = !taskList.isSelectionEmpty();
             completeButton.setEnabled(selected);
+            deleteButton.setEnabled(selected);
         });
 
         completeButton.addActionListener(e -> markTaskCompleted());
+        deleteButton.addActionListener(e -> deleteTask());
     }
 
     private boolean addTask() {
@@ -158,74 +170,4 @@ public class project {
         String dueDateStr = dateInputField.getText().trim();
 
         if (title.isEmpty()) {
-            JOptionPane.showMessageDialog(frame, "Task title cannot be empty.",
-                    "Input Error", JOptionPane.ERROR_MESSAGE);
-            return false;
-        }
-
-        LocalDate dueDate;
-        try {
-            dueDate = LocalDate.parse(dueDateStr, dateFormatter);
-            if (dueDate.isBefore(LocalDate.now())) {
-                JOptionPane.showMessageDialog(frame, "Due date cannot be in the past.",
-                        "Input Error", JOptionPane.ERROR_MESSAGE);
-                return false;
-            }
-        } catch (DateTimeParseException ex) {
-            JOptionPane.showMessageDialog(frame, "Invalid date format. Please use YYYY-MM-DD.",
-                    "Input Error", JOptionPane.ERROR_MESSAGE);
-            return false;
-        }
-
-        Task newTask = new Task(title, dueDate);
-        taskListModel.addElement(newTask);
-        sortTasks();
-
-        titleInputField.setText("");
-        dateInputField.setText("");
-        return true;
-    }
-
-    private void markTaskCompleted() {
-        int selectedIndex = taskList.getSelectedIndex();
-        if (selectedIndex >= 0) {
-            Task task = taskListModel.get(selectedIndex);
-            if (!task.isCompleted()) {
-                task.setCompleted(true);
-                taskList.repaint();
-                JOptionPane.showMessageDialog(frame, "✅ Task marked as completed!");
-                sortTasks();
-            } else {
-                JOptionPane.showMessageDialog(frame, "Task is already completed.");
-            }
-        }
-    }
-
-    private void sortTasks() {
-        java.util.List<Task> tasks = java.util.Collections.list(taskListModel.elements());
-
-        tasks.sort((t1, t2) -> {
-            if (t1.isCompleted() && !t2.isCompleted()) return 1;
-            if (!t1.isCompleted() && t2.isCompleted()) return -1;
-            int dateCompare = t1.getDueDate().compareTo(t2.getDueDate());
-            if (dateCompare != 0) return dateCompare;
-            return t1.getTitle().compareToIgnoreCase(t2.getTitle());
-        });
-
-        taskListModel.clear();
-        for (Task t : tasks) {
-            taskListModel.addElement(t);
-        }
-    }
-
-    private void confirmExit() {
-        int option = JOptionPane.showConfirmDialog(frame,
-                "Are you sure you want to exit?",
-                "Exit Confirmation",
-                JOptionPane.YES_NO_OPTION);
-        if (option == JOptionPane.YES_OPTION) {
-            frame.dispose();
-            System.exit(0);
-        }
-    }
-}
+            JOptionPane.showMessageDialog(frame, "Task title cann
