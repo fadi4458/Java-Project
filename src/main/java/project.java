@@ -160,13 +160,8 @@ public class project {
             deleteButton.setEnabled(selected);
         });
 
-        completeButton.addActionListener(e -> {
-            markTaskCompleted();
-        });
-
-        deleteButton.addActionListener(e -> {
-            deleteTask();
-        });
+        completeButton.addActionListener(e -> markTaskCompleted());
+        deleteButton.addActionListener(e -> deleteTask());
     }
 
     private boolean addTask() {
@@ -224,13 +219,23 @@ public class project {
         }
     }
 
+    // ✅ Improved sort functionality here
     private void sortTasks() {
         java.util.List<Task> tasks = java.util.Collections.list(taskListModel.elements());
+
         tasks.sort((t1, t2) -> {
+            // Pending first
             if (t1.isCompleted() && !t2.isCompleted()) return 1;
             if (!t1.isCompleted() && t2.isCompleted()) return -1;
-            return t1.getDueDate().compareTo(t2.getDueDate());
+
+            // Earlier due date first
+            int dateCompare = t1.getDueDate().compareTo(t2.getDueDate());
+            if (dateCompare != 0) return dateCompare;
+
+            // Then sort alphabetically
+            return t1.getTitle().compareToIgnoreCase(t2.getTitle());
         });
+
         taskListModel.clear();
         for (Task t : tasks) {
             taskListModel.addElement(t);
