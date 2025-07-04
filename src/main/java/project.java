@@ -4,14 +4,14 @@ import java.awt.event.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.*;
 
 public class project {
 
     private JFrame frame;
     private JTextField titleInputField;
     private JTextField dateInputField;
+    private JComboBox<String> priorityComboBox;
     private DefaultListModel<Task> taskListModel;
     private JList<Task> taskList;
     private JButton addButton, completeButton, deleteButton;
@@ -26,8 +26,8 @@ public class project {
             } catch (Exception e) {
                 e.printStackTrace();
                 JOptionPane.showMessageDialog(null,
-                        "Unexpected error occurred during app startup:\n" + e.getMessage(),
-                        "Error", JOptionPane.ERROR_MESSAGE);
+                        "Unexpected error occurred:\n" + e.getMessage(),
+                        "Startup Error", JOptionPane.ERROR_MESSAGE);
             }
         });
     }
@@ -37,8 +37,8 @@ public class project {
     }
 
     private void initialize() {
-        frame = new JFrame("✨ Simple To-Do Application ✨");
-        frame.setBounds(100, 100, 600, 450);
+        frame = new JFrame("✨ To-Do Application with Priority ✨");
+        frame.setBounds(100, 100, 650, 500);
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         frame.setLayout(new BorderLayout(15, 15));
         frame.getContentPane().setBackground(new Color(245, 245, 250));
@@ -68,50 +68,58 @@ public class project {
 
         JLabel taskLabel = new JLabel("Task Title:");
         taskLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-        taskLabel.setForeground(new Color(60, 60, 120));
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.weightx = 0.25;
         inputPanel.add(taskLabel, gbc);
 
         titleInputField = new JTextField();
         titleInputField.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         gbc.gridx = 1;
         gbc.gridy = 0;
-        gbc.weightx = 0.75;
+        gbc.gridwidth = 2;
         inputPanel.add(titleInputField, gbc);
 
         JLabel dueDateLabel = new JLabel("Due Date (YYYY-MM-DD):");
         dueDateLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-        dueDateLabel.setForeground(new Color(60, 60, 120));
         gbc.gridx = 0;
         gbc.gridy = 1;
-        gbc.weightx = 0.25;
+        gbc.gridwidth = 1;
         inputPanel.add(dueDateLabel, gbc);
 
         dateInputField = new JTextField();
         dateInputField.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         gbc.gridx = 1;
         gbc.gridy = 1;
-        gbc.weightx = 0.75;
+        gbc.gridwidth = 2;
         inputPanel.add(dateInputField, gbc);
 
-        addButton = new JButton("🎯 Add New Task");
+        JLabel priorityLabel = new JLabel("Priority:");
+        priorityLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.gridwidth = 1;
+        inputPanel.add(priorityLabel, gbc);
+
+        priorityComboBox = new JComboBox<>(new String[]{"High", "Medium", "Low"});
+        priorityComboBox.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        gbc.gridx = 1;
+        gbc.gridy = 2;
+        gbc.gridwidth = 2;
+        inputPanel.add(priorityComboBox, gbc);
+
+        addButton = new JButton("🎯 Add Task");
         addButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
         addButton.setBackground(new Color(100, 149, 237));
         addButton.setForeground(Color.WHITE);
-        addButton.setFocusPainted(false);
-        addButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         gbc.gridx = 0;
-        gbc.gridy = 2;
-        gbc.gridwidth = 2;
-        gbc.weightx = 1.0;
+        gbc.gridy = 3;
+        gbc.gridwidth = 3;
         inputPanel.add(addButton, gbc);
 
         successLabel = new JLabel("", JLabel.CENTER);
         successLabel.setFont(new Font("Segoe UI", Font.ITALIC, 14));
         successLabel.setForeground(new Color(34, 139, 34));
-        gbc.gridy = 3;
+        gbc.gridy = 4;
         inputPanel.add(successLabel, gbc);
 
         frame.add(inputPanel, BorderLayout.NORTH);
@@ -120,50 +128,33 @@ public class project {
         taskList = new JList<>(taskListModel);
         taskList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         taskList.setCellRenderer(new TaskCellRenderer());
-        taskList.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         JScrollPane scrollPane = new JScrollPane(taskList);
         scrollPane.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createLineBorder(new Color(100, 100, 150)),
                 "Tasks", 0, 0, new Font("Segoe UI", Font.BOLD, 18), new Color(50, 50, 100)));
-        scrollPane.setBackground(Color.WHITE);
-
         frame.add(scrollPane, BorderLayout.CENTER);
 
         JPanel actionPanel = new JPanel();
         actionPanel.setBackground(new Color(245, 245, 250));
 
-        completeButton = new JButton("✅ Mark Completed");
+        completeButton = new JButton("✅ Complete");
         completeButton.setEnabled(false);
-        completeButton.setFont(new Font("Segoe UI", Font.BOLD, 16));
         completeButton.setBackground(new Color(60, 179, 113));
         completeButton.setForeground(Color.WHITE);
-        completeButton.setFocusPainted(false);
-        completeButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        deleteButton = new JButton("🗑️ Delete Task");
+        deleteButton = new JButton("🗑️ Delete");
         deleteButton.setEnabled(false);
-        deleteButton.setFont(new Font("Segoe UI", Font.BOLD, 16));
         deleteButton.setBackground(new Color(220, 20, 60));
         deleteButton.setForeground(Color.WHITE);
-        deleteButton.setFocusPainted(false);
-        deleteButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         actionPanel.add(completeButton);
         actionPanel.add(deleteButton);
         frame.add(actionPanel, BorderLayout.SOUTH);
 
-        // Add listeners
+        // Listeners
         addButton.addActionListener(e -> {
-            try {
-                if (addTask()) {
-                    successLabel.setText("🎉 Task added successfully!");
-                } else {
-                    successLabel.setText("");
-                }
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(frame,
-                        "An unexpected error occurred while adding the task:\n" + ex.getMessage(),
-                        "Error", JOptionPane.ERROR_MESSAGE);
+            if (addTask()) {
+                successLabel.setText("🎉 Task added!");
             }
         });
 
@@ -174,126 +165,101 @@ public class project {
             successLabel.setText("");
         });
 
-        completeButton.addActionListener(e -> {
-            try {
-                markTaskCompleted();
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(frame,
-                        "An error occurred while marking the task completed:\n" + ex.getMessage(),
-                        "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        });
-
-        deleteButton.addActionListener(e -> {
-            try {
-                deleteTask();
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(frame,
-                        "An error occurred while deleting the task:\n" + ex.getMessage(),
-                        "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        });
+        completeButton.addActionListener(e -> markTaskCompleted());
+        deleteButton.addActionListener(e -> deleteTask());
     }
 
     private boolean addTask() {
         String title = titleInputField.getText().trim();
-        String dueDateStr = dateInputField.getText().trim();
+        String dateStr = dateInputField.getText().trim();
+        String priority = (String) priorityComboBox.getSelectedItem();
 
         if (title.isEmpty()) {
-            JOptionPane.showMessageDialog(frame, "Task title cannot be empty.",
-                    "Input Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(frame, "Title cannot be empty!", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
 
         LocalDate dueDate;
         try {
-            dueDate = LocalDate.parse(dueDateStr, dateFormatter);
+            dueDate = LocalDate.parse(dateStr, dateFormatter);
             if (dueDate.isBefore(LocalDate.now())) {
-                JOptionPane.showMessageDialog(frame, "Due date cannot be in the past.",
-                        "Input Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(frame, "Due date cannot be in the past.", "Error", JOptionPane.ERROR_MESSAGE);
                 return false;
             }
-        } catch (DateTimeParseException ex) {
-            JOptionPane.showMessageDialog(frame, "Invalid date format. Please use YYYY-MM-DD.",
-                    "Input Error", JOptionPane.ERROR_MESSAGE);
+        } catch (DateTimeParseException e) {
+            JOptionPane.showMessageDialog(frame, "Invalid date format (YYYY-MM-DD).", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
 
-        Task newTask = new Task(title, dueDate);
-        taskListModel.addElement(newTask);
+        taskListModel.addElement(new Task(title, dueDate, priority));
         sortTasks();
 
         titleInputField.setText("");
         dateInputField.setText("");
+        priorityComboBox.setSelectedIndex(0);
         return true;
     }
 
     private void markTaskCompleted() {
-        int selectedIndex = taskList.getSelectedIndex();
-        if (selectedIndex >= 0) {
-            Task task = taskListModel.get(selectedIndex);
+        int index = taskList.getSelectedIndex();
+        if (index >= 0) {
+            Task task = taskListModel.get(index);
             if (!task.isCompleted()) {
-                int confirm = JOptionPane.showConfirmDialog(frame,
-                        "Mark this task as completed?",
-                        "Confirm", JOptionPane.YES_NO_OPTION);
+                int confirm = JOptionPane.showConfirmDialog(frame, "Mark this task as completed?", "Confirm", JOptionPane.YES_NO_OPTION);
                 if (confirm == JOptionPane.YES_OPTION) {
                     task.setCompleted(true);
                     taskList.repaint();
-                    JOptionPane.showMessageDialog(frame, "✅ Task marked as completed!");
                     sortTasks();
-                    successLabel.setText("Task marked as completed!");
+                    successLabel.setText("✅ Task completed.");
                 }
             } else {
-                JOptionPane.showMessageDialog(frame, "Task is already completed.");
-                successLabel.setText("This task is already completed.");
+                JOptionPane.showMessageDialog(frame, "Already completed.");
             }
         }
     }
 
     private void deleteTask() {
-        int selectedIndex = taskList.getSelectedIndex();
-        if (selectedIndex >= 0) {
-            int confirm = JOptionPane.showConfirmDialog(frame,
-                    "Are you sure you want to delete the selected task?",
-                    "Confirm Delete", JOptionPane.YES_NO_OPTION);
+        int index = taskList.getSelectedIndex();
+        if (index >= 0) {
+            int confirm = JOptionPane.showConfirmDialog(frame, "Delete selected task?", "Confirm", JOptionPane.YES_NO_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
-                taskListModel.remove(selectedIndex);
-                successLabel.setText("Task deleted successfully.");
-                sortTasks();
+                taskListModel.remove(index);
+                successLabel.setText("🗑️ Task deleted.");
             }
-        } else {
-            JOptionPane.showMessageDialog(frame, "Please select a task to delete.",
-                    "No Selection", JOptionPane.WARNING_MESSAGE);
         }
     }
 
     private void sortTasks() {
-        java.util.List<Task> tasks = Collections.list(taskListModel.elements());
-        tasks.sort(Comparator.comparing(Task::isCompleted).thenComparing(Task::getDueDate));
+        List<Task> tasks = Collections.list(taskListModel.elements());
+        tasks.sort(Comparator
+                .comparing(Task::isCompleted)
+                .thenComparing(Task::getPriorityLevel)
+                .thenComparing(Task::getDueDate));
+
         taskListModel.clear();
-        for (Task t : tasks) {
-            taskListModel.addElement(t);
+        for (Task task : tasks) {
+            taskListModel.addElement(task);
         }
     }
 
     private void confirmExit() {
-        int confirm = JOptionPane.showConfirmDialog(frame,
-                "Are you sure you want to exit?",
-                "Exit Confirmation", JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(frame, "Are you sure you want to exit?", "Exit Confirmation", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
             frame.dispose();
         }
     }
 
-    // Task class
+    // Task class with priority
     static class Task {
         private String title;
         private LocalDate dueDate;
         private boolean completed;
+        private String priority;
 
-        public Task(String title, LocalDate dueDate) {
+        public Task(String title, LocalDate dueDate, String priority) {
             this.title = title;
             this.dueDate = dueDate;
+            this.priority = priority;
             this.completed = false;
         }
 
@@ -303,6 +269,18 @@ public class project {
 
         public LocalDate getDueDate() {
             return dueDate;
+        }
+
+        public String getPriority() {
+            return priority;
+        }
+
+        public int getPriorityLevel() {
+            switch (priority) {
+                case "High": return 1;
+                case "Medium": return 2;
+                default: return 3;
+            }
         }
 
         public boolean isCompleted() {
@@ -315,20 +293,18 @@ public class project {
 
         @Override
         public String toString() {
-            return title + " (Due: " + dueDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + ")" +
-                    (completed ? " ✅" : "");
+            return title + " | Due: " + dueDate + " | Priority: " + priority + (completed ? " ✅" : "");
         }
     }
 
-    // Renderer for list
+    // Custom cell renderer
     static class TaskCellRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList<?> list, Object value,
                                                       int index, boolean isSelected,
                                                       boolean cellHasFocus) {
             JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            if (value instanceof Task) {
-                Task task = (Task) value;
+            if (value instanceof Task task) {
                 label.setText(task.toString());
                 if (task.isCompleted()) {
                     label.setForeground(Color.GRAY);
