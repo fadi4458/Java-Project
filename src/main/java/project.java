@@ -12,7 +12,7 @@ public class project {
     private JTextField dateInputField;
     private DefaultListModel<Task> taskListModel;
     private JList<Task> taskList;
-    private JButton addButton, deleteButton, completeButton;
+    private JButton addButton, completeButton;
     private JLabel successLabel;
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -134,16 +134,7 @@ public class project {
         completeButton.setFocusPainted(false);
         completeButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        deleteButton = new JButton("🗑️ Delete Task");
-        deleteButton.setEnabled(false);
-        deleteButton.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        deleteButton.setBackground(new Color(220, 20, 60));
-        deleteButton.setForeground(Color.WHITE);
-        deleteButton.setFocusPainted(false);
-        deleteButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
         actionPanel.add(completeButton);
-        actionPanel.add(deleteButton);
         frame.add(actionPanel, BorderLayout.SOUTH);
 
         addButton.addActionListener(e -> {
@@ -157,11 +148,9 @@ public class project {
         taskList.addListSelectionListener(e -> {
             boolean selected = !taskList.isSelectionEmpty();
             completeButton.setEnabled(selected);
-            deleteButton.setEnabled(selected);
         });
 
         completeButton.addActionListener(e -> markTaskCompleted());
-        deleteButton.addActionListener(e -> deleteTask());
     }
 
     private boolean addTask() {
@@ -212,27 +201,14 @@ public class project {
         }
     }
 
-    private void deleteTask() {
-        int selectedIndex = taskList.getSelectedIndex();
-        if (selectedIndex >= 0) {
-            taskListModel.remove(selectedIndex);
-        }
-    }
-
-    // ✅ Improved sort functionality here
     private void sortTasks() {
         java.util.List<Task> tasks = java.util.Collections.list(taskListModel.elements());
 
         tasks.sort((t1, t2) -> {
-            // Pending first
             if (t1.isCompleted() && !t2.isCompleted()) return 1;
             if (!t1.isCompleted() && t2.isCompleted()) return -1;
-
-            // Earlier due date first
             int dateCompare = t1.getDueDate().compareTo(t2.getDueDate());
             if (dateCompare != 0) return dateCompare;
-
-            // Then sort alphabetically
             return t1.getTitle().compareToIgnoreCase(t2.getTitle());
         });
 
