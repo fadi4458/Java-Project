@@ -233,14 +233,19 @@ public class project {
         if (selectedIndex >= 0) {
             Task task = taskListModel.get(selectedIndex);
             if (!task.isCompleted()) {
-                task.setCompleted(true);
-                taskList.repaint();
-                JOptionPane.showMessageDialog(frame, "✅ Task marked as completed!");
-                sortTasks();
-                successLabel.setText("Task marked as completed!");
+                int confirm = JOptionPane.showConfirmDialog(frame,
+                        "Mark this task as completed?",
+                        "Confirm", JOptionPane.YES_NO_OPTION);
+                if (confirm == JOptionPane.YES_OPTION) {
+                    task.setCompleted(true);
+                    taskList.repaint();
+                    JOptionPane.showMessageDialog(frame, "✅ Task marked as completed!");
+                    sortTasks();
+                    successLabel.setText("Task marked as completed!");
+                }
             } else {
                 JOptionPane.showMessageDialog(frame, "Task is already completed.");
-                successLabel.setText("");
+                successLabel.setText("This task is already completed.");
             }
         }
     }
@@ -263,14 +268,8 @@ public class project {
     }
 
     private void sortTasks() {
-        // Convert model to array, sort, then update model
         java.util.List<Task> tasks = Collections.list(taskListModel.elements());
-
-        // Sort by completion (incomplete first), then by due date ascending
-        tasks.sort(Comparator
-                .comparing(Task::isCompleted)
-                .thenComparing(Task::getDueDate));
-
+        tasks.sort(Comparator.comparing(Task::isCompleted).thenComparing(Task::getDueDate));
         taskListModel.clear();
         for (Task t : tasks) {
             taskListModel.addElement(t);
@@ -321,7 +320,7 @@ public class project {
         }
     }
 
-    // Custom renderer to show completed tasks with strike-through
+    // Renderer for list
     static class TaskCellRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList<?> list, Object value,
