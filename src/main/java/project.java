@@ -8,8 +8,8 @@ import java.time.format.DateTimeParseException;
 public class project {
 
     private JFrame frame;
-    private JTextField taskField;
-    private JTextField dueDateField;
+    private JTextField titleInputField;
+    private JTextField dateInputField;
     private DefaultListModel<Task> taskListModel;
     private JList<Task> taskList;
     private JButton addButton, deleteButton, completeButton;
@@ -68,12 +68,12 @@ public class project {
         gbc.weightx = 0.25;
         inputPanel.add(taskLabel, gbc);
 
-        taskField = new JTextField();
-        taskField.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        titleInputField = new JTextField();
+        titleInputField.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         gbc.gridx = 1;
         gbc.gridy = 0;
         gbc.weightx = 0.75;
-        inputPanel.add(taskField, gbc);
+        inputPanel.add(titleInputField, gbc);
 
         JLabel dueDateLabel = new JLabel("Due Date (YYYY-MM-DD):");
         dueDateLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
@@ -83,12 +83,12 @@ public class project {
         gbc.weightx = 0.25;
         inputPanel.add(dueDateLabel, gbc);
 
-        dueDateField = new JTextField();
-        dueDateField.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        dateInputField = new JTextField();
+        dateInputField.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         gbc.gridx = 1;
         gbc.gridy = 1;
         gbc.weightx = 0.75;
-        inputPanel.add(dueDateField, gbc);
+        inputPanel.add(dateInputField, gbc);
 
         addButton = new JButton("➕ Add Task");
         addButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
@@ -163,8 +163,8 @@ public class project {
     }
 
     private boolean addTask() {
-        String title = taskField.getText().trim();
-        String dueDateStr = dueDateField.getText().trim();
+        String title = titleInputField.getText().trim();
+        String dueDateStr = dateInputField.getText().trim();
 
         if (title.isEmpty()) {
             JOptionPane.showMessageDialog(frame, "Task title cannot be empty.",
@@ -191,8 +191,8 @@ public class project {
 
         sortTasks();
 
-        taskField.setText("");
-        dueDateField.setText("");
+        titleInputField.setText("");
+        dateInputField.setText("");
         return true;
     }
 
